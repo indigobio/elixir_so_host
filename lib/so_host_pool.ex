@@ -6,13 +6,13 @@ defmodule SoHostPool do
 
   defstruct [:pid, :name]
 
-  def start_link(so_path, parallelism \\ 8, host_path \\ nil) do
+  def start_link(so_path, parallelism \\ 8) do
     name = :"so_host:#{so_path}:#{inspect(make_ref)}"
-    {:ok, pid} = Supervisor.start_link(__MODULE__, [host_path, so_path, parallelism, name])
+    {:ok, pid} = Supervisor.start_link(__MODULE__, [so_path, parallelism, name])
     {:ok, %SoHostPool{pid: pid, name: name}}
   end
 
-  def init([host_path, so_path, parallelism, name]) do
+  def init([so_path, parallelism, name]) do
     poolboy_config = [
       {:name, {:local, name}},
       {:worker_module, SoHost},
@@ -20,9 +20,8 @@ defmodule SoHostPool do
       {:max_overflow, 0}
     ]
 
-    start_link_arg = [so_path, host_path]
     children = [
-      :poolboy.child_spec(name, poolboy_config, start_link_arg)
+      :poolboy.child_spec(name, poolboy_config, so_path)
     ]
 
     options = [strategy: :one_for_one]

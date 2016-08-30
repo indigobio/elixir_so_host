@@ -11,8 +11,8 @@ defmodule SoHost do
 
   # Callbacks
 
-  def init([host_path, so_path]) do
-    {:ok, %State{so_path: so_path, port: make_slave(host_path, so_path)}}
+  def init(so_path) do
+    {:ok, %State{so_path: so_path, port: make_slave(so_path)}}
   end
 
   def handle_call({:request, name, data}, _from, %State{port: port} = state) when is_binary(data) do
@@ -35,10 +35,8 @@ defmodule SoHost do
 
   # Client
 
-  def start_link([so_path, host_path]), do: start_link(so_path, host_path) # for poolboy
-  def start_link(so_path), do: start_link(so_path, nil)                    # for production
-  def start_link(so_path, host_path) do                                    # for testing
-    GenServer.start_link(__MODULE__, [host_path, so_path])
+  def start_link(so_path) do
+    GenServer.start_link(__MODULE__, so_path)
   end
 
   def call(so_host, func_name, data) do
@@ -53,8 +51,8 @@ defmodule SoHost do
     {:stop, :slave_died, %{state | port: nil}}
   end
 
-  def make_slave(host_path, so_path) do
-    desc = {:spawn_executable, host_path}
+  def make_slave(so_path) do
+    desc = {:spawn_executable, "priv/so_host"}
     args = [so_path]
     opts = [{:args, args}, :binary, {:packet, 4}, :exit_status]
     Port.open(desc, opts)
