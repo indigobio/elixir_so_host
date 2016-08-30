@@ -52,7 +52,8 @@ defmodule SoHost do
   end
 
   def make_slave(so_path) do
-    desc = {:spawn_executable, "priv/so_host"}
+    host_path = Path.join(Mix.Project.build_path, "lib/elixir_so_host/priv/so_host")
+    desc = {:spawn_executable, host_path}
     args = [so_path]
     opts = [{:args, args}, :binary, {:packet, 4}, :exit_status]
     Port.open(desc, opts)
