@@ -1,2 +1,0 @@
-defmodule ElixirSoHost do
-end
